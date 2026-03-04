@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>6.EE.9 – Independent & Dependent Variables</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 10px;
+  }
+
+  /* ── NAV TABS ── */
+  .tab-bar {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    justify-content: center; margin-bottom: 14px;
+  }
+  .tab-btn {
+    padding: 8px 14px; border: none; border-radius: 20px;
+    font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700;
+    cursor: pointer; transition: all .2s;
+    color: #fff; opacity: .75;
+  }
+  .tab-btn:hover { opacity: 1; transform: scale(1.05); }
+  .tab-btn.active { opacity: 1; transform: scale(1.08); box-shadow: 0 4px 12px rgba(0,0,0,.3); }
+
+  .tab-btn:nth-child(1)  { background: #e74c3c; }
+  .tab-btn:nth-child(2)  { background: #e67e22; }
+  .tab-btn:nth-child(3)  { background: #27ae60; }
+  .tab-btn:nth-child(4)  { background: #2980b9; }
+  .tab-btn:nth-child(5)  { background: #8e44ad; }
+  .tab-btn:nth-child(6)  { background: #16a085; }
+
+  /* ── CARD ── */
+  .card {
+    background: #fff; border-radius: 20px;
+    padding: 24px; max-width: 820px; margin: 0 auto;
+    box-shadow: 0 10px 40px rgba(0,0,0,.25);
+    display: none;
+  }
+  .card.active { display: block; }
+
+  h1 { font-size: 22px; font-weight: 900; margin-bottom: 6px; }
+  h2 { font-size: 18px; font-weight: 800; margin-bottom: 10px; }
+  p  { font-size: 14px; line-height: 1.6; margin-bottom: 10px; }
+
+  /* ── DEFINITION BOXES ── */
+  .def-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 14px 0; }
+  .def-box {
+    border-radius: 16px; padding: 18px; text-align: center;
+    border: 3px solid transparent;
+  }
+  .def-box.ind  { background: #fff3cd; border-color: #f39c12; }
+  .def-box.dep  { background: #d5f5e3; border-color: #27ae60; }
+  .def-box .emoji { font-size: 38px; display: block; margin-bottom: 6px; }
+  .def-box h3   { font-size: 16px; font-weight: 900; margin-bottom: 6px; }
+  .def-box p    { font-size: 13px; margin: 0; }
+
+  /* ── EXAMPLE SCENARIO CARDS ── */
+  .scenario-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 14px 0; }
+  .scenario {
+    border-radius: 14px; padding: 14px;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-left: 5px solid #3498db;
+    font-size: 13px;
+  }
+  .scenario .icon { font-size: 26px; margin-bottom: 4px; }
+  .scenario strong { color: #e74c3c; }
+  .scenario .dep-label  { color: #27ae60; font-weight: 700; }
+  .scenario .ind-label  { color: #e67e22; font-weight: 700; }
+
+  /* ── HINT BOX ── */
+  .hint-box {
+    background: #eaf4fb; border-left: 5px solid #3498db;
+    border-radius: 8px; padding: 12px 16px; margin: 12px 0;
+    font-size: 13px;
+  }
+
+  /* ── BUTTON ── */
+  .btn {
+    padding: 10px 22px; border: none; border-radius: 24px;
+    font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 800;
+    cursor: pointer; transition: all .2s; color: #fff;
+  }
+  .btn-blue   { background: #3498db; }
+  .btn-green  { background: #27ae60; }
+  .btn-orange { background: #e67e22; }
+  .btn-purple { background: #8e44ad; }
+  .btn:hover  { filter: brightness(1.1); transform: translateY(-2px); }
+
+  /* ── MATCHING ACTIVITY ── */
+  .match-container { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 14px 0; }
+  .match-col h3 { text-align: center; font-size: 15px; margin-bottom: 10px; padding: 8px; border-radius: 10px; }
+  .match-col.left  h3 { background: #fff3cd; }
+  .match-col.right h3 { background: #d5f5e3; }
+
+  .drag-item {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff; border-radius: 12px; padding: 10px 14px;
+    margin-bottom: 8px; cursor: grab; font-size: 13px; font-weight: 700;
+    text-align: center; user-select: none;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .drag-item:hover  { transform: scale(1.03); box-shadow: 0 4px 14px rgba(0,0,0,.3); }
+  .drag-item.dragging { opacity: .5; }
+
+  .drop-zone {
+    min-height: 52px; border: 2.5px dashed #27ae60; border-radius: 12px;
+    padding: 8px; margin-bottom: 8px; background: #f0fdf4;
+    font-size: 12px; color: #888; text-align: center;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s;
+  }
+  .drop-zone.over { background: #c8f7c5; border-color: #1a7a40; }
+  .drop-zone .drop-label { font-size: 11px; color: #aaa; pointer-events: none; }
+
+  /* ── SORT / CLASSIFY ── */
+  .classify-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 14px 0; }
+  .classify-pool { grid-column: 1 / -1; }
+  .pool-items { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; min-height: 50px; }
+  .classify-bucket {
+    border-radius: 14px; padding: 12px; min-height: 130px;
+    text-align: center;
+  }
+  .classify-bucket h4 { font-size: 14px; margin-bottom: 8px; }
+  .classify-bucket.ind-bucket { background: #fff3cd; border: 2.5px dashed #f39c12; }
+  .classify-bucket.dep-bucket { background: #d5f5e3; border: 2.5px dashed #27ae60; }
+  .classify-bucket .drop-zone { border: none; background: transparent; min-height: 80px; flex-wrap: wrap; align-items: flex-start; justify-content: center; gap: 6px; display: flex; }
+
+  .chip {
+    background: #3498db; color: #fff; border-radius: 20px;
+    padding: 6px 12px; font-size: 12px; font-weight: 700;
+    cursor: grab; user-select: none; transition: transform .15s;
+  }
+  .chip:hover { transform: scale(1.06); }
+  .chip.dragging { opacity: .5; }
+
+  /* ── FILL IN THE BLANK ── */
+  .fill-q { background: #f8f9fa; border-radius: 12px; padding: 14px 18px; margin-bottom: 12px; font-size: 14px; }
+  .fill-q select {
+    padding: 4px 8px; border-radius: 8px; border: 2px solid #3498db;
+    font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700;
+    background: #eaf4fb; color: #2c3e50; cursor: pointer;
+  }
+
+  /* ── TABLE ACTIVITY ── */
+  table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13px; }
+  th { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; padding: 10px 14px; text-align: left; }
+  td { padding: 10px 14px; border-bottom: 1px solid #e0e0e0; vertical-align: top; }
+  tr:nth-child(even) td { background: #f4f0ff; }
+  td select {
+    padding: 4px 8px; border-radius: 8px; border: 2px solid #8e44ad;
+    font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700;
+    background: #f4f0ff; cursor: pointer; width: 100%;
+  }
+
+  /* ── FEEDBACK ── */
+  .feedback { display: none; margin-top: 12px; padding: 12px 18px; border-radius: 12px; font-size: 14px; font-weight: 700; text-align: center; }
+  .feedback.show { display: block; }
+  .feedback.correct { background: #d5f5e3; color: #1e8449; border: 2px solid #27ae60; }
+  .feedback.wrong   { background: #fde8e8; color: #c0392b; border: 2px solid #e74c3c; }
+  .feedback.partial { background: #fef9e7; color: #b7770d; border: 2px solid #f39c12; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-bar-wrap { background: #e0e0e0; border-radius: 20px; height: 10px; margin: 6px 0 14px; }
+  .progress-bar { height: 10px; border-radius: 20px; background: linear-gradient(90deg,#27ae60,#2ecc71); transition: width .4s; }
+
+  /* ── AXIS LABEL ACTIVITY ── */
+  .graph-mock {
+    position: relative; width: 320px; height: 240px;
+    border-left: 4px solid #2c3e50; border-bottom: 4px solid #2c3e50;
+    margin: 20px auto; background: #f8f9fa; border-radius: 0 0 0 0;
+  }
+  .x-axis-label, .y-axis-label {
+    position: absolute; font-size: 13px; font-weight: 700;
+  }
+  .x-axis-label { bottom: -32px; left: 50%; transform: translateX(-50%); }
+  .y-axis-label { left: -50px; top: 50%; transform: rotate(-90deg) translateX(50%); white-space: nowrap; }
+  .axis-drop {
+    min-width: 110px; min-height: 28px; border: 2px dashed #3498db;
+    border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;
+    background: #eaf4fb; font-size: 12px; padding: 4px 8px;
+  }
+
+  /* ── EQUATION BUILDER ── */
+  .eq-scenario { background: #f0f4ff; border-radius: 14px; padding: 16px; margin-bottom: 12px; }
+  .eq-scenario p { margin-bottom: 8px; }
+  .eq-builder { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+  .eq-builder select {
+    padding: 6px 10px; border-radius: 10px; border: 2px solid #667eea;
+    font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700;
+    background: #fff; cursor: pointer;
+  }
+  .eq-sym { font-size: 20px; font-weight: 900; color: #667eea; }
+  .eq-eq  { font-size: 20px; font-weight: 900; color: #333; }
+
+  /* ── SCORE DISPLAY ── */
+  .score-box {
+    background: linear-gradient(135deg,#667eea,#764ba2); color:#fff;
+    border-radius: 14px; padding: 12px 20px; text-align: center;
+    font-size: 15px; font-weight: 900; margin-bottom: 14px;
+    display: none;
+  }
+  .score-box.show { display: block; }
+</style>
+</head>
+<body>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="showTab('tab1',this)">📖 Definitions</button>
+  <button class="tab-btn" onclick="showTab('tab2',this)">🧩 Matching</button>
+  <button class="tab-btn" onclick="showTab('tab3',this)">🗂️ Sort It!</button>
+  <button class="tab-btn" onclick="showTab('tab4',this)">✏️ Fill-in</button>
+  <button class="tab-btn" onclick="showTab('tab5',this)">📊 Tables</button>
+  <button class="tab-btn" onclick="showTab('tab6',this)">🔢 Equations</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     TAB 1 – DEFINITIONS & EXAMPLES
+════════════════════════════════════════════════════════════ -->
+<div id="tab1" class="card active">
+  <h1>📖 What Are Independent &amp; Dependent Variables?</h1>
+  <p style="color:#666">Standard 6.EE.9 – Learn the key vocabulary before you start solving!</p>
+
+  <div class="def-grid">
+    <div class="def-box ind">
+      <span class="emoji">🎮</span>
+      <h3>Independent Variable</h3>
+      <p>The variable YOU control or change.<br>
+         It is the <strong>input</strong>.<br>
+         It lives on the <strong>x-axis</strong>.<br>
+         It does NOT depend on anything.</p>
+    </div>
+    <div class="def-box dep">
+      <span class="emoji">🎯</span>
+      <h3>Dependent Variable</h3>
+      <p>The variable that <em>changes because of</em> the independent variable.<br>
+         It is the <strong>output</strong>.<br>
+         It lives on the <strong>y-axis</strong>.<br>
+         It DEPENDS on the input.</p>
+    </div>
+  </div>
+
+  <div class="hint-box">
+    💡 <strong>Memory trick:</strong> The <em>dependent</em> variable is like a pet — it depends on its owner (the independent variable) to survive!
+  </div>
+
+  <h2>🌍 Real-World Examples</h2>
+  <div class="scenario-grid">
+    <div class="scenario">
+      <div class="icon">🚗</div>
+      <strong>Road Trip</strong><br>
+      <span class="ind-label">Independent (x):</span> hours driven<br>
+      <span class="dep-label">Dependent (y):</span> miles traveled<br>
+      <em>Miles depend on how long you drive.</em>
+    </div>
+    <div class="scenario">
+      <div class="icon">🍕</div>
+      <strong>Pizza Party</strong><br>
+      <span class="ind-label">Independent (x):</span> number of pizzas<br>
+      <span class="dep-label">Dependent (y):</span> total cost<br>
+      <em>Cost depends on how many pizzas you order.</em>
+    </div>
+    <div class="scenario">
+      <div class="icon">🌱</div>
+      <strong>Plant Growth</strong><br>
+      <span class="ind-label">Independent (x):</span> days of sunlight<br>
+      <span class="dep-label">Dependent (y):</span> height of plant<br>
+      <em>Height depends on sunlight received.</em>
+    </div>
+    <div class="scenario">
+      <div class="icon">💰</div>
+      <strong>Babysitting</strong><br>
+      <span class="ind-label">Independent (x):</span> hours worked<br>
+      <span class="dep-label">Dependent (y):</span> money earned<br>
+      <em>Earnings depend on hours worked.</em>
+    </div>
+    <div class="scenario">
+      <div class="icon">📚</div>
+      <strong>Reading Challenge</strong><br>
+      <span class="ind-label">Independent (x):</span> number of books read<br>
+      <span class="dep-label">Dependent (y):</span> points earned<br>
+      <em>Points depend on books read.</em>
+    </div>
+    <div class="scenario">
+      <div class="icon">🎵</div>
+      <strong>Music Downloads</strong><br>
+      <span class="ind-label">Independent (x):</span> songs downloaded<br>
+      <span class="dep-label">Dependent (y):</span> total data used<br>
+      <em>Data used depends on songs downloaded.</em>
+    </div>
+  </div>
+
+  <div class="hint-box">
+    🔑 <strong>Key Questions to Ask:</strong><br>
+    ✅ "Which variable CAUSES a change?" → Independent<br>
+    ✅ "Which variable IS CHANGED by the other?" → Dependent<br>
+    ✅ "Which comes first / is the input?" → Independent
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     TAB 2 – MATCHING
+════════════════════════════════════════════════════════════ -->
+<div id="tab2" class="card">
+  <h1>🧩 Matching Activity</h1>
+  <p>Drag each <strong style="color:#764ba2">term/scenario</strong> on the left and drop it onto its correct <strong style="color:#27ae60">match</strong> on the right. When matched, both cards disappear! 🎉</p>
+
+  <div class="score-box" id="matchScore"></div>
+
+  <div class="match-container">
+    <div class="match-col left">
+      <h3>🟣 Terms &amp; Scenarios</h3>
+      <div id="dragPool">
+        <div class="drag-item" id="d1" draggable="true" ondragstart="dragStart(event)">INPUT value</div>
+        <div class="drag-item" id="d2" draggable="true" ondragstart="dragStart(event)">Lives on the x-axis</div>
+        <div class="drag-item" id="d3" draggable="true" ondragstart="dragStart(event)">Hours studied → test score</div>
+        <div class="drag-item" id="d4" draggable="true" ondragstart="dragStart(event)">y in an equation</div>
+        <div class="drag-item" id="d5" draggable="true" ondragstart="dragStart(event)">The CAUSE of change</div>
+        <div class="drag-item" id="d6" draggable="true" ondragstart="dragStart(event)">Number of tickets sold → money raised</div>
+      </div>
+    </div>
+    <div class="match-col right">
+      <h3>🟢 Matches</h3>
+      <div class="drop-zone" id="t1" ondragover="allowDrop(event)" ondrop="dropMatch(event,'d1')" data-pair="d1">
+        <span class="drop-label">Independent Variable</span></div>
+      <div class="drop-zone" id="t2" ondragover="allowDrop(event)" ondrop="dropMatch(event,'d2')" data-pair="d2">
+        <span class="drop-label">Independent Variable (also!)</span></div>
+      <div class="drop-zone" id="t3" ondragover="allowDrop(event)" ondrop="dropMatch(event,'d3')" data-pair="d3">
+        <span class="drop-label">Independent = hours studied</span></div>
+      <div class="drop-zone" id="t4" ondragover="allowDrop(event)" ondrop="dropMatch(event,'d4')" data-pair="d4">
+        <span class="drop-label">Dependent Variable</span></div>
+      <div class="drop-zone" id="t5" ondragover="allowDrop(event)" ondrop="dropMatch(event,'d5')" data-pair="d5">
+        <span class="drop-label">Independent Variable</span></div>
+      <div class="drop-zone" id="t6" ondragover="allowDrop(event)" ondrop="dropMatch(event,'d6')" data-pair="d6">
+        <span class="drop-label">Independent = tickets sold</span></div>
+    </div>
+  </div>
+
+  <div class="feedback" id="matchFeedback"></div>
+  <button class="btn btn-orange" onclick="resetMatch()" style="margin-top:10px">🔄 Reset Matching</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     TAB 3 – SORT / CLASSIFY (DRAG INTO BUCKETS)
+════════════════════════════════════════════════════════════ -->
+<div id="tab3" class="card">
+  <h1>🗂️ Sort It! Drag to the Right Bucket</h1>
+  <p>Drag each item into the correct category — <strong style="color:#e67e22">Independent Variable</strong> or <strong style="color:#27ae60">Dependent Variable</strong>.</p>
+
+  <div class="classify-container">
+    <!-- Pool -->
+    <div class="classify-pool">
+      <div class="pool-items" id="sortPool">
+        <div class="chip" id="s1" draggable="true" ondragstart="chipDrag(event)">x in y = 3x</div>
+        <div class="chip" id="s2" draggable="true" ondragstart="chipDrag(event)">Money earned 💵</div>
+        <div class="chip" id="s3" draggable="true" ondragstart="chipDrag(event)">Hours of practice 🎸</div>
+        <div class="chip" id="s4" draggable="true" ondragstart="chipDrag(event)">Total calories eaten 🍔</div>
+        <div class="chip" id="s5" draggable="true" ondragstart="chipDrag(event)">Number of gallons 🛢️</div>
+        <div class="chip" id="s6" draggable="true" ondragstart="chipDrag(event)">Skill level gained 🏆</div>
+        <div class="chip" id="s7" draggable="true" ondragstart="chipDrag(event)">y in y = 5x + 2</div>
+        <div class="chip" id="s8" draggable="true" ondragstart="chipDrag(event)">Total miles driven 🚗</div>
+        <div class="chip" id="s9" draggable="true" ondragstart="chipDrag(event)">Number of meals 🍽️</div>
+        <div class="chip" id="s10" draggable="true" ondragstart="chipDrag(event)">Total price 🏷️</div>
+      </div>
+    </div>
+    <!-- Independent Bucket -->
+    <div class="classify-bucket ind-bucket">
+      <h4>🟡 Independent Variable<br><small>(x — the INPUT)</small></h4>
+      <div class="drop-zone" id="indBucket" ondragover="allowDrop(event)" ondrop="chipDrop(event,'ind')"></div>
+    </div>
+    <!-- Dependent Bucket -->
+    <div class="classify-bucket dep-bucket">
+      <h4>🟢 Dependent Variable<br><small>(y — the OUTPUT)</small></h4>
+      <div class="drop-zone" id="depBucket" ondragover="allowDrop(event)" ondrop="chipDrop(event,'dep')"></div>
+    </div>
+  </div>
+
+  <button class="btn btn-green" onclick="checkSort()" style="margin-right:8px">✅ Check My Answers</button>
+  <button class="btn btn-orange" onclick="resetSort()">🔄 Reset</button>
+  <div class="feedback" id="sortFeedback"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     TAB 4 – FILL IN THE BLANK
+════════════════════════════════════════════════════════════ -->
+<div id="tab4" class="card">
+  <h1>✏️ Fill in the Blank</h1>
+  <p>Choose the correct answer from each dropdown to complete the sentence.</p>
+
+  <div class="progress-bar-wrap"><div class="progress-bar" id="fillProgress" style="width:0%"></div></div>
+  <div id="fillScore" style="font-size:13px;color:#888;margin-bottom:10px"></div>
+
+  <div class="fill-q" id="fq1">
+    <strong>1.</strong> In the equation <em>y = 4x</em>, the independent variable is
+    <select onchange="checkFill(1,this,'x')">
+      <option value="">-- choose --</option>
+      <option value="x">x</option>
+      <option value="y">y</option>
+      <option value="4">4</option>
+    </select> and the dependent variable is
+    <select onchange="checkFill2(1,this,'y')">
+      <option value="">-- choose --</option>
+      <option value="x">x</option>
+      <option value="y">y</option>
+      <option value="4">4</option>
+    </select>.
+  </div>
+
+  <div class="fill-q" id="fq2">
+    <strong>2.</strong> 🐶 The more dog treats you give, the more your dog wags its tail.
+    The <strong>independent</strong> variable is
+    <select onchange="checkFill(2,this,'treats')">
+      <option value="">-- choose --</option>
+      <option value="treats">number of treats</option>
+      <option value="wags">tail wags</option>
+      <option value="dog">the dog</option>
+    </select>.
+  </div>
+
+  <div class="fill-q" id="fq3">
+    <strong>3.</strong> 🚲 The total distance biked <strong>depends on</strong> the number of hours riding.
+    So "hours riding" is the
+    <select onchange="checkFill(3,this,'ind')">
+      <option value="">-- choose --</option>
+      <option value="ind">Independent variable</option>
+      <option value="dep">Dependent variable</option>
+      <option value="neither">Neither</option>
+    </select>.
+  </div>
+
+  <div class="fill-q" id="fq4">
+    <strong>4.</strong> In a table of values, the independent variable is typically placed in the
+    <select onchange="checkFill(4,this,'left')">
+      <option value="">-- choose --</option>
+      <option value="left">LEFT (first) column</option>
+      <option value="right">RIGHT (second) column</option>
+      <option value="middle">MIDDLE column</option>
+    </select>.
+  </div>
+
+  <div class="fill-q" id="fq5">
+    <strong>5.</strong> 🌡️ As temperature rises, ice cream sales increase.
+    The <strong>dependent</strong> variable is
+    <select onchange="checkFill(5,this,'sales')">
+      <option value="">-- choose --</option>
+      <option value="sales">ice cream sales</option>
+      <option value="temp">temperature</option>
+      <option value="summer">the season</option>
+    </select>.
+  </div>
+
+  <div class="fill-q" id="fq6">
+    <strong>6.</strong> On a graph, the <strong>dependent</strong> variable is plotted on the
+    <select onchange="checkFill(6,this,'yaxis')">
+      <option value="">-- choose --</option>
+      <option value="xaxis">x-axis (horizontal)</option>
+      <option value="yaxis">y-axis (vertical)</option>
+      <option value="origin">origin</option>
+    </select>.
+  </div>
+
+  <div class="fill-q" id="fq7">
+    <strong>7.</strong> 🛒 The total grocery bill increases with each item added to the cart.
+    "Items in cart" is the
+    <select onchange="checkFill(7,this,'ind')">
+      <option value="">-- choose --</option>
+      <option value="ind">Independent variable</option>
+      <option value="dep">Dependent variable</option>
+    </select>.
+  </div>
+
+  <div class="fill-q" id="fq8">
+    <strong>8.</strong> In the equation <em>y = 2x + 5</em>, when we write the equation to show the relationship, <em>y</em> represents the
+    <select onchange="checkFill(8,this,'dep')">
+      <option value="">-- choose --</option>
+      <option value="dep">Dependent variable</option>
+      <option value="ind">Independent variable</option>
+      <option value="coeff">Coefficient</option>
+    </select>.
+  </div>
+
+  <div class="feedback" id="fillFeedback"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     TAB 5 – TABLE ACTIVITY
+════════════════════════════════════════════════════════════ -->
+<div id="tab5" class="card">
+  <h1>📊 Identify Variables in Tables</h1>
+  <p>For each table, use the dropdown to label whether the column is an <strong style="color:#e67e22">Independent</strong> or <strong style="color:#27ae60">Dependent</strong> variable.</p>
+
+  <h2>🚴 Table 1 — Biking</h2>
+  <table>
+    <tr><th>Hours Biking</th><th>Miles Traveled</th></tr>
+    <tr><td>1</td><td>10</td></tr>
+    <tr><td>2</td><td>20</td></tr>
+    <tr><td>3</td><td>30</td></tr>
+    <tr>
+      <td><select onchange="checkTableQ(1,this,'ind')"><option value="">Label...</option><option value="ind">Independent (x)</option><option value="dep">Dependent (y)</option></select></td>
+      <td><select onchange="checkTableQ(2,this,'dep')"><option value="">Label...</option><option value="ind">Independent (x)</option><option value="dep">Dependent (y)</option></select></td>
+    </tr>
+  </table>
+
+  <h2 style="margin-top:16px">🍪 Table 2 — Cookies</h2>
+  <table>
+    <tr><th>Cups of Flour</th><th>Number of Cookies Made</th></tr>
+    <tr><td>1</td><td>12</td></tr>
+    <tr><td>2</td><td>24</td></tr>
+    <tr><td>3</td><td>36</td></tr>
+    <tr>
+      <td><select onchange="checkTableQ(3,this,'ind')"><option value="">Label...</option><option value="ind">Independent (x)</option><option value="dep">Dependent (y)</option></select></td>
+      <td><select onchange="checkTableQ(4,this,'dep')"><option value="">Label...</option><option value="ind">Independent (x)</option><option value="dep">Dependent (y)</option></select></td>
+    </tr>
+  </table>
+
+  <h2 style="margin-top:16px">💡 Table 3 — Light Bulbs</h2>
+  <table>
+    <tr><th>Total Electricity Used (kWh)</th><th>Number of Hours On</th></tr>
+    <tr><td>2</td><td>1</td></tr>
+    <tr><td>4</td><td>2</td></tr>
+    <tr><td>6</td><td>3</td></tr>
+    <tr>
+      <td><select onchange="checkTableQ(5,this,'dep')"><option value="">Label...</option><option value="ind">Independent (x)</option><option value="dep">Dependent (y)</option></select></td>
+      <td><select onchange="checkTableQ(6,this,'ind')"><option value="">Label...</option><option value="ind">Independent (x)</option><option value="dep">Dependent (y)</option></select></td>
+    </tr>
+  </table>
+
+  <div class="hint-box" style="margin-top:14px">
+    ⚠️ <strong>Tricky!</strong> The first column is NOT always the independent variable — look at which quantity <em>causes</em> the change!
+  </div>
+
+  <button class="btn btn-purple" onclick="checkAllTable()" style="margin-top:12px">✅ Check Table Answers</button>
+  <div class="feedback" id="tableFeedback"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     TAB 6 – EQUATION BUILDER
+════════════════════════════════════════════════════════════ -->
+<div id="tab6" class="card">
+  <h1>🔢 Build the Equation!</h1>
+  <p>Read each real-world scenario and build the equation by choosing the correct parts. Then identify which is independent and dependent!</p>
+
+  <div class="eq-scenario" id="eq1">
+    <p>🛵 <strong>Scenario 1:</strong> A scooter travels <strong>15 miles per hour</strong>. Let <em>d</em> = distance and <em>h</em> = hours.</p>
+    <div class="eq-builder">
+      <select onchange="checkEq(1,'dep',this,'d')">
+        <option value="">?</option>
+        <option value="d">d (distance)</option>
+        <option value="h">h (hours)</option>
+      </select>
+      <span class="eq-eq">=</span>
+      <span style="font-weight:900;font-size:18px">15</span>
+      <span class="eq-sym">×</span>
+      <select onchange="checkEq(1,'ind',this,'h')">
+        <option value="">?</option>
+        <option value="d">d (distance)</option>
+        <option value="h">h (hours)</option>
+      </select>
+    </div>
+    <div class="feedback" id="eqFb1"></div>
+  </div>
+
+  <div class="eq-scenario" style="margin-top:14px" id="eq2">
+    <p>🎮 <strong>Scenario 2:</strong> A gamer earns <strong>50 points per level</strong>. Let <em>p</em> = points and <em>L</em> = levels completed.</p>
+    <div class="eq-builder">
+      <select onchange="checkEq(2,'dep',this,'p')">
+        <option value="">?</option>
+        <option value="p">p (points)</option>
+        <option value="L">L (levels)</option>
+      </select>
+      <span class="eq-eq">=</span>
+      <span style="font-weight:900;font-size:18px">50</span>
+      <span class="eq-sym">×</span>
+      <select onchange="checkEq(2,'ind',this,'L')">
+        <option value="">?</option>
+        <option value="p">p (points)</option>
+        <option value="L">L (levels)</option>
+      </select>
+    </div>
+    <div class="feedback" id="eqFb2"></div>
+  </div>
+
+  <div class="eq-scenario" style="margin-top:14px" id="eq3">
+    <p>🥤 <strong>Scenario 3:</strong> A smoothie needs <strong>3 fruits per serving</strong>. Let <em>f</em> = total fruits and <em>s</em> = servings.</p>
+    <div class="eq-builder">
+      <select onchange="checkEq(3,'dep',this,'f')">
+        <option value="">?</option>
+        <option value="f">f (fruits)</option>
+        <option value="s">s (servings)</option>
+      </select>
+      <span class="eq-eq">=</span>
+      <span style="font-weight:900;font-size:18px">3</span>
+      <span class="eq-sym">×</span>
+      <select onchange="checkEq(3,'ind',this,'s')">
+        <option value="">?</option>
+        <option value="f">f (fruits)</option>
+        <option value="s">s (servings)</option>
+      </select>
+    </div>
+    <div class="feedback" id="eqFb3"></div>
+  </div>
+
+  <div class="hint-box" style="margin-top:16px">
+    🔑 <strong>Pattern:</strong> The equation is always written as <strong>dependent = (rate) × independent</strong>, which is <strong>y = kx</strong>.
+    The dependent variable is always <em>isolated</em> on the left side!
+  </div>
+</div>
+
+<!-- ══════════════════ JAVASCRIPT ══════════════════ -->
+<script>
+// ── TAB SWITCHING ──
+function showTab(id, btn) {
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── TAB 2: MATCHING ──
+var currentDrag = null;
+var matchCount  = 0;
+
+function dragStart(e) {
+  currentDrag = e.target.id;
+  e.target.classList.add('dragging');
+}
+function allowDrop(e) { e.preventDefault(); e.currentTarget.classList.add('over'); }
+document.addEventListener('dragend', function(){
+  document.querySelectorAll('.drag-item').forEach(d=>d.classList.remove('dragging'));
+  document.querySelectorAll('.drop-zone').forEach(z=>z.classList.remove('over'));
+});
+
+function dropMatch(e, expectedId) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('over');
+  if (currentDrag === expectedId) {
+    document.getElementById(currentDrag).style.display = 'none';
+    e.currentTarget.style.display = 'none';
+    matchCount++;
+    if (matchCount === 6) {
+      var s = document.getElementById('matchScore');
+      s.textContent = '🎉 PERFECT! You matched all 6! Amazing work!';
+      s.classList.add('show');
+    }
+  } else {
+    var fb = document.getElementById('matchFeedback');
+    fb.textContent = '❌ Not quite! Think about whether this is the input or the output. Try again!';
+    fb.className = 'feedback show wrong';
+    setTimeout(()=>{ fb.classList.remove('show'); }, 2000);
+  }
+}
+
+function resetMatch() {
+  matchCount = 0;
+  document.querySelectorAll('#dragPool .drag-item').forEach(d=>d.style.display='');
+  document.querySelectorAll('#tab2 .drop-zone').forEach(z=>{ z.style.display=''; z.classList.remove('over'); });
+  document.getElementById('matchScore').classList.remove('show');
+  document.getElementById('matchFeedback').classList.remove('show');
+}
+
+// ── TAB 3: SORT ──
+var chipDragging = null;
+// correct answers: ind = s1,s3,s5,s9 | dep = s2,s4,s6,s7,s8,s10
+var sortAnswers = { s1:'ind',s2:'dep',s3:'ind',s4:'dep',s5:'ind',s6:'dep',s7:'dep',s8:'dep',s9:'ind',s10:'dep' };
+
+function chipDrag(e) { chipDragging = e.target.id; }
+function chipDrop(e, bucket) {
+  e.preventDefault();
+  if (!chipDragging) return;
+  var el = document.getElementById(chipDragging);
+  var zone = document.getElementById(bucket === 'ind' ? 'indBucket' : 'depBucket');
+  zone.appendChild(el);
+  chipDragging = null;
+}
+
+function checkSort() {
+  var correct = 0; var total = Object.keys(sortAnswers).length;
+  Object.keys(sortAnswers).forEach(function(id){
+    var el = document.getElementById(id);
+    var inInd = document.getElementById('indBucket').contains(el);
+    var inDep = document.getElementById('depBucket').contains(el);
+    var correct_bucket = sortAnswers[id];
+    if ((correct_bucket==='ind' && inInd)||(correct_bucket==='dep' && inDep)) {
+      el.style.background='#27ae60'; correct++;
+    } else if (inInd||inDep) {
+      el.style.background='#e74c3c';
+    }
+  });
+  var fb=document.getElementById('sortFeedback');
+  if (correct===total) {
+    fb.textContent='🎉 Perfect! All '+total+' sorted correctly!';
+    fb.className='feedback show correct';
+  } else {
+    fb.textContent='You got '+correct+' out of '+total+' correct! Red items need to move. Try again!';
+    fb.className='feedback show '+(correct>=total/2?'partial':'wrong');
+  }
+}
+
+function resetSort() {
+  var pool = document.getElementById('sortPool');
+  ['s1','s2','s3','s4','s5','s6','s7','s8','s9','s10'].forEach(function(id){
+    var el=document.getElementById(id);
+    el.style.background='';
+    pool.appendChild(el);
+  });
+  document.getElementById('sortFeedback').classList.remove('show');
+}
+
+// ── TAB 4: FILL IN THE BLANK ──
+var fillCorrect = {};
+function checkFill(qn, sel, answer) {
+  if (sel.value === answer) {
+    sel.style.borderColor='#27ae60'; sel.style.background='#d5f5e3';
+    fillCorrect['f'+qn+'a'] = true;
+  } else if (sel.value !== '') {
+    sel.style.borderColor='#e74c3c'; sel.style.background='#fde8e8';
+    fillCorrect['f'+qn+'a'] = false;
+  }
+  updateFillProgress();
+}
+function checkFill2(qn, sel, answer) {
+  if (sel.value === answer) {
+    sel.style.borderColor='#27ae60'; sel.style.background='#d5f5e3';
+    fillCorrect['f'+qn+'b'] = true;
+  } else if (sel.value !== '') {
+    sel.style.borderColor='#e74c3c'; sel.style.background='#fde8e8';
+    fillCorrect['f'+qn+'b'] = false;
+  }
+  updateFillProgress();
+}
+function updateFillProgress() {
+  var total=9; var c=Object.values(fillCorrect).filter(Boolean).length;
+  var pct = Math.round(c/total*100);
+  document.getElementById('fillProgress').style.width=pct+'%';
+  document.getElementById('fillScore').textContent=c+' / '+total+' correct';
+}
+
+// ── TAB 5: TABLE ──
+var tableCorrect = {};
+function checkTableQ(qn, sel, answer) {
+  if (sel.value === answer) {
+    sel.style.borderColor='#27ae60'; tableCorrect['t'+qn]=true;
+  } else if (sel.value!=='') {
+    sel.style.borderColor='#e74c3c'; tableCorrect['t'+qn]=false;
+  }
+}
+function checkAllTable() {
+  var c=Object.values(tableCorrect).filter(Boolean).length;
+  var total=6;
+  var fb=document.getElementById('tableFeedback');
+  if(c===total){fb.textContent='🎉 All 6 correct! You really understand the difference!';fb.className='feedback show correct';}
+  else {fb.textContent=c+' / '+total+' correct. Check the red dropdowns — remember: ask yourself which variable CAUSES the change!';fb.className='feedback show '+(c>=total/2?'partial':'wrong');}
+}
+
+// ── TAB 6: EQUATION ──
+var eqState = {};
+function checkEq(num, role, sel, answer) {
+  var key = 'eq'+num+role;
+  if (!eqState['eq'+num]) eqState['eq'+num]={};
+  if (sel.value===answer){
+    sel.style.borderColor='#27ae60'; sel.style.background='#d5f5e3';
+    eqState['eq'+num][role]=true;
+  } else if (sel.value!==''){
+    sel.style.borderColor='#e74c3c'; sel.style.background='#fde8e8';
+    eqState['eq'+num][role]=false;
+  }
+  var st = eqState['eq'+num];
+  var fb = document.getElementById('eqFb'+num);
+  if (st.dep && st.ind) {
+    fb.textContent='✅ Correct! The dependent variable is the output (left side) and the independent variable is the input (right side)!';
+    fb.className='feedback show correct';
+  } else if (st.dep===false || st.ind===false) {
+    fb.textContent='❌ Not quite! Remember: the dependent variable is isolated on the left side (= output).';
+    fb.className='feedback show wrong';
+  }
+}
+</script>
+</body>
+</html>
